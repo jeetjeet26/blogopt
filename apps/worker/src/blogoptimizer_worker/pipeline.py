@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from .content import clean_article_body
 from .db import get_supabase
 from .integrations import audit_technical_signals, research_keywords, research_sources
 from .llm import generate_recommendation
@@ -28,7 +29,12 @@ async def run_job(job_id: str) -> None:
             .data
         )
         brief = brief[0] if brief else None
-        topic = brief["topic"] if brief else article["title"]
+        article_for_analysis = {
+            **article,
+            "body": clean_article_body(article.get("body") or "", article.get("title")),
+            "raw_body_was_cleaned": True,
+        }
+        topic = brief["topic"] if brief else article_for_analysis["title"]
 
         keywords = await research_keywords(topic)
         sources = await research_sources(topic)
@@ -61,7 +67,7 @@ async def run_job(job_id: str) -> None:
         await update_job(job_id, "drafting" if job["mode"] == "write" else "reviewing")
         recommendation = await generate_recommendation(
             mode=job["mode"],
-            article=article,
+            article=article_for_analysis,
             brief=brief,
             keywords=keywords,
             sources=sources,

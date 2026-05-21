@@ -34,6 +34,74 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         <section className="card stack">
           <h2>Recommendations</h2>
           <p>{recommendation.summary}</p>
+
+          {recommendation.keywordStrategy?.primaryKeyword ? (
+            <section className="recommendation-block">
+              <span className="eyebrow">Keyword Strategy</span>
+              <h3>{recommendation.keywordStrategy.primaryKeyword}</h3>
+              <p>
+                Intent: {recommendation.keywordStrategy.primaryIntent || "Not specified"} · Volume:{" "}
+                {recommendation.keywordStrategy.primaryVolume ?? "n/a"} · Difficulty:{" "}
+                {recommendation.keywordStrategy.primaryDifficulty ?? "n/a"} · CPC:{" "}
+                {recommendation.keywordStrategy.primaryCpc ?? "n/a"}
+              </p>
+              <p className="muted">{recommendation.keywordStrategy.rationale}</p>
+              {recommendation.keywordStrategy.secondaryKeywords?.length ? (
+                <ul>
+                  {recommendation.keywordStrategy.secondaryKeywords.map(
+                    (
+                      keyword: {
+                        keyword: string;
+                        intent?: string;
+                        volume?: number;
+                        difficulty?: number;
+                        cpc?: number;
+                        useCase: string;
+                      },
+                      index: number
+                    ) => (
+                      <li key={`${keyword.keyword}-${index}`}>
+                        <strong>{keyword.keyword}</strong> ({keyword.intent || "intent n/a"}, vol{" "}
+                        {keyword.volume ?? "n/a"}, KD {keyword.difficulty ?? "n/a"}):{" "}
+                        {keyword.useCase}
+                      </li>
+                    )
+                  )}
+                </ul>
+              ) : null}
+            </section>
+          ) : null}
+
+          {recommendation.prioritizedActions?.length ? (
+            <>
+              <h3>Priority Optimization Plan</h3>
+              <div className="stack">
+                {recommendation.prioritizedActions.map(
+                  (
+                    item: {
+                      priority: string;
+                      action: string;
+                      keyword?: string;
+                      expectedImpact: string;
+                      effort?: string;
+                    },
+                    index: number
+                  ) => (
+                    <article className="recommendation-block" key={`${item.action}-${index}`}>
+                      <span className="eyebrow">{item.priority} priority</span>
+                      <h4>{item.action}</h4>
+                      {item.keyword ? <p>Keyword: {item.keyword}</p> : null}
+                      <p className="muted">
+                        {item.expectedImpact}
+                        {item.effort ? ` Effort: ${item.effort}.` : ""}
+                      </p>
+                    </article>
+                  )
+                )}
+              </div>
+            </>
+          ) : null}
+
           <div className="comparison">
             <div>
               <h3>Current</h3>
@@ -54,6 +122,38 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
               <p>{recommendation.slug?.recommended}</p>
             </div>
           </div>
+
+          {recommendation.sectionKeywordMap?.length ? (
+            <>
+              <h3>Keyword Placement Map</h3>
+              <div className="stack">
+                {recommendation.sectionKeywordMap.map(
+                  (
+                    item: {
+                      section: string;
+                      targetKeyword: string;
+                      placement: string;
+                      exactRecommendation: string;
+                      rationale: string;
+                    },
+                    index: number
+                  ) => (
+                    <article className="recommendation-block" key={`${item.section}-${index}`}>
+                      <span className="eyebrow">{item.section}</span>
+                      <h4>{item.targetKeyword}</h4>
+                      <p>
+                        <strong>Placement:</strong> {item.placement}
+                      </p>
+                      <p>
+                        <strong>Exact edit:</strong> {item.exactRecommendation}
+                      </p>
+                      <p className="muted">{item.rationale}</p>
+                    </article>
+                  )
+                )}
+              </div>
+            </>
+          ) : null}
 
           <h3>Copy Improvements</h3>
           <div className="stack">
@@ -145,11 +245,12 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          <h3>Keyword Targets</h3>
+          <h3>All Keyword Targets</h3>
           <ul>
-            {recommendation.keywords?.map((keyword: { keyword: string; rationale: string }) => (
+            {recommendation.keywords?.map((keyword: { keyword: string; rationale: string; volume?: number; difficulty?: number; intent?: string }) => (
               <li key={keyword.keyword}>
-                <strong>{keyword.keyword}</strong>: {keyword.rationale}
+                <strong>{keyword.keyword}</strong> ({keyword.intent || "intent n/a"}, vol{" "}
+                {keyword.volume ?? "n/a"}, KD {keyword.difficulty ?? "n/a"}): {keyword.rationale}
               </li>
             ))}
           </ul>

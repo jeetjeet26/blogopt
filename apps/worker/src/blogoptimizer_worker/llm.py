@@ -23,12 +23,16 @@ async def generate_recommendation(
         "content": json.dumps(
             {
                 "task": (
-                    "Create a full P11creative SEO and GEO editorial review. Do not stop at "
-                    "metadata. Provide concrete copy edits, rewritten sections, content gaps, "
-                    "source-backed additions, and rationale tied to keyword/search intent, "
-                    "citation readiness, internal linking, and brand voice. If mode is write, "
-                    "also draft article copy. Preserve P11's personality and do not invent "
-                    "unsupported factual claims."
+                    "Create a keyword-driven SEO and GEO optimization review for P11creative. "
+                    "GEO means Generative Engine Optimization/citation readiness, not local "
+                    "geographic SEO unless a target market is explicitly supplied. Start from "
+                    "SEMrush evidence. Choose a primary keyword and secondary keyword cluster "
+                    "using volume, difficulty, CPC, and search intent when available. Every copy "
+                    "recommendation must name the target keyword or semantic entity it supports. "
+                    "Avoid generic AI modules, city placeholders, broad local SEO advice, and "
+                    "full rewrites that flatten P11's playful voice. Make surgical, publish-ready "
+                    "edits that improve ranking potential while preserving the article's original "
+                    "tone. Treat article.body as already cleaned of nav/footer chrome."
                 ),
                 "mode": mode,
                 "article": article,
@@ -38,7 +42,44 @@ async def generate_recommendation(
                 "technical_audit": technical.model_dump(),
                 "required_json_shape": {
                     "score": "0-100",
-                    "summary": "concise review summary",
+                    "summary": "concise keyword-backed review summary",
+                    "keywordStrategy": {
+                        "primaryKeyword": "chosen keyword from SEMrush/research",
+                        "primaryIntent": "informational/commercial/etc.",
+                        "primaryVolume": "number if available",
+                        "primaryDifficulty": "number if available",
+                        "primaryCpc": "number if available",
+                        "rationale": "why this is the best target for this article",
+                        "secondaryKeywords": [
+                            {
+                                "keyword": "keyword",
+                                "intent": "intent",
+                                "volume": "number if available",
+                                "difficulty": "number if available",
+                                "cpc": "number if available",
+                                "useCase": "where/how to use it"
+                            }
+                        ],
+                        "doNotTarget": ["too broad, off-intent, or unsupported terms"]
+                    },
+                    "sectionKeywordMap": [
+                        {
+                            "section": "title/meta/intro/H2/body/CTA",
+                            "targetKeyword": "keyword or semantic entity",
+                            "placement": "exact placement",
+                            "exactRecommendation": "specific insertion or edit",
+                            "rationale": "search intent and evidence reason"
+                        }
+                    ],
+                    "prioritizedActions": [
+                        {
+                            "priority": "high/medium/low",
+                            "action": "specific optimization action",
+                            "keyword": "keyword if applicable",
+                            "expectedImpact": "why it matters",
+                            "effort": "low/medium/high"
+                        }
+                    ],
                     "metaTitle": {"current": "string", "recommended": "string", "rationale": "string"},
                     "metaDescription": {
                         "current": "string",
@@ -51,7 +92,7 @@ async def generate_recommendation(
                             "location": "intro, H2 name, CTA, paragraph, etc.",
                             "issue": "what is underperforming in the current copy",
                             "recommendation": "specific editorial action",
-                            "seoOrGeoRationale": "why this improves SEO/GEO"
+                            "seoOrGeoRationale": "must mention keyword/search intent or GEO citation signal"
                         }
                     ],
                     "revisedSections": [
@@ -59,13 +100,13 @@ async def generate_recommendation(
                             "section": "section name",
                             "current": "current copy excerpt",
                             "revised": "rewritten publish-ready copy",
-                            "rationale": "why this revision is better"
+                            "rationale": "keyword/search intent reason plus voice-preservation note"
                         }
                     ],
                     "contentGaps": [
                         {
                             "gap": "missing topic, proof point, statistic, FAQ, definition, etc.",
-                            "whyItMatters": "SEO/GEO reason",
+                            "whyItMatters": "keyword/search intent/GEO reason",
                             "suggestedCopy": "copy the editor can add"
                         }
                     ],
@@ -74,10 +115,19 @@ async def generate_recommendation(
                             "type": "FAQ, definition block, source-backed claim, CTA, internal link module",
                             "placement": "where it belongs",
                             "copy": "publish-ready suggested copy",
-                            "rationale": "research/SEO/GEO rationale"
+                            "rationale": "keyword/search intent/GEO rationale"
                         }
                     ],
-                    "keywords": [],
+                    "keywords": [
+                        {
+                            "keyword": "keyword",
+                            "intent": "intent",
+                            "volume": "number if available",
+                            "difficulty": "number if available",
+                            "cpc": "number if available",
+                            "rationale": "why target or support this term"
+                        }
+                    ],
                     "geoSignals": [],
                     "internalLinks": [],
                     "schema": [],
@@ -108,6 +158,13 @@ async def generate_recommendation(
 
 
 def _normalize_payload(payload: dict) -> dict:
+    payload["keywordStrategy"] = _normalize_keyword_strategy(payload.get("keywordStrategy") or {})
+    payload["sectionKeywordMap"] = [
+        _normalize_section_keyword_map(item) for item in payload.get("sectionKeywordMap", [])
+    ]
+    payload["prioritizedActions"] = [
+        _normalize_prioritized_action(item) for item in payload.get("prioritizedActions", [])
+    ]
     payload["copyImprovements"] = [
         _normalize_copy_improvement(item) for item in payload.get("copyImprovements", [])
     ]
@@ -128,6 +185,80 @@ def _normalize_payload(payload: dict) -> dict:
         item for item in [_normalize_source(item) for item in payload.get("sources", [])] if item
     ]
     return payload
+
+
+def _normalize_keyword_strategy(item: dict) -> dict:
+    if not isinstance(item, dict):
+        return {}
+
+    secondary = item.get("secondaryKeywords") or []
+    return {
+        "primaryKeyword": item.get("primaryKeyword") or item.get("primary_keyword"),
+        "primaryIntent": item.get("primaryIntent") or item.get("primary_intent"),
+        "primaryVolume": item.get("primaryVolume") or item.get("primary_volume"),
+        "primaryDifficulty": item.get("primaryDifficulty") or item.get("primary_difficulty"),
+        "primaryCpc": item.get("primaryCpc") or item.get("primary_cpc"),
+        "rationale": item.get("rationale"),
+        "secondaryKeywords": [
+            _normalize_secondary_keyword(keyword) for keyword in secondary if keyword
+        ],
+        "doNotTarget": item.get("doNotTarget") or item.get("do_not_target") or [],
+    }
+
+
+def _normalize_secondary_keyword(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "keyword": item.get("keyword") or item.get("term") or "Untitled keyword",
+            "intent": item.get("intent"),
+            "volume": item.get("volume"),
+            "difficulty": item.get("difficulty"),
+            "cpc": item.get("cpc"),
+            "useCase": item.get("useCase") or item.get("use_case") or "Supporting term.",
+        }
+
+    return {"keyword": item, "useCase": "Supporting term."}
+
+
+def _normalize_section_keyword_map(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "section": item.get("section") or "Article section",
+            "targetKeyword": item.get("targetKeyword") or item.get("keyword") or "Keyword",
+            "placement": item.get("placement") or "Article body",
+            "exactRecommendation": item.get("exactRecommendation")
+            or item.get("recommendation")
+            or "",
+            "rationale": item.get("rationale") or "Supports search intent.",
+        }
+
+    return {
+        "section": "Article section",
+        "targetKeyword": item,
+        "placement": "Article body",
+        "exactRecommendation": item,
+        "rationale": "Supports search intent.",
+    }
+
+
+def _normalize_prioritized_action(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "priority": item.get("priority") if item.get("priority") in {"high", "medium", "low"} else "medium",
+            "action": item.get("action") or item.get("recommendation") or "",
+            "keyword": item.get("keyword"),
+            "expectedImpact": item.get("expectedImpact")
+            or item.get("expected_impact")
+            or "Improves SEO relevance.",
+            "effort": item.get("effort") if item.get("effort") in {"low", "medium", "high"} else "medium",
+        }
+
+    return {
+        "priority": "medium",
+        "action": item,
+        "expectedImpact": "Improves SEO relevance.",
+        "effort": "medium",
+    }
 
 
 def _normalize_copy_improvement(item: dict | str) -> dict:

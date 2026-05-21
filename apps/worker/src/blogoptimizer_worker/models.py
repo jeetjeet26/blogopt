@@ -40,6 +40,9 @@ class TechnicalFinding(BaseModel):
 class RecommendationPayload(BaseModel):
     score: int = Field(ge=0, le=100)
     summary: str
+    keywordStrategy: dict = Field(default_factory=dict)
+    sectionKeywordMap: list[dict] = Field(default_factory=list)
+    prioritizedActions: list[dict] = Field(default_factory=list)
     metaTitle: dict
     metaDescription: dict
     slug: dict

@@ -38,6 +38,51 @@ export type ArticleBrief = z.infer<typeof articleBriefSchema>;
 export const recommendationSchema = z.object({
   score: z.number().min(0).max(100),
   summary: z.string(),
+  keywordStrategy: z
+    .object({
+      primaryKeyword: z.string().optional(),
+      primaryIntent: z.string().optional(),
+      primaryVolume: z.number().optional(),
+      primaryDifficulty: z.number().optional(),
+      primaryCpc: z.number().optional(),
+      rationale: z.string().optional(),
+      secondaryKeywords: z
+        .array(
+          z.object({
+            keyword: z.string(),
+            intent: z.string().optional(),
+            volume: z.number().optional(),
+            difficulty: z.number().optional(),
+            cpc: z.number().optional(),
+            useCase: z.string()
+          })
+        )
+        .default([]),
+      doNotTarget: z.array(z.string()).default([])
+    })
+    .default({}),
+  sectionKeywordMap: z
+    .array(
+      z.object({
+        section: z.string(),
+        targetKeyword: z.string(),
+        placement: z.string(),
+        exactRecommendation: z.string(),
+        rationale: z.string()
+      })
+    )
+    .default([]),
+  prioritizedActions: z
+    .array(
+      z.object({
+        priority: z.enum(["high", "medium", "low"]),
+        action: z.string(),
+        keyword: z.string().optional(),
+        expectedImpact: z.string(),
+        effort: z.enum(["low", "medium", "high"]).optional()
+      })
+    )
+    .default([]),
   metaTitle: z.object({
     current: z.string().optional(),
     recommended: z.string(),
