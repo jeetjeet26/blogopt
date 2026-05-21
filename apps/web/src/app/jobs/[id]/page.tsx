@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { JobProgress } from "@/components/JobProgress";
 import { getJob } from "@/lib/jobs";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +21,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       <section className="hero stack">
         <span className="eyebrow">{job.mode}</span>
         <h1>{job.articles?.title || "Untitled article"}</h1>
-        <p>
-          <span className="status">{job.status}</span>
-        </p>
-        {job.error_message ? <p className="muted">{job.error_message}</p> : null}
+        <JobProgress jobId={id} initialStatus={job.status} initialError={job.error_message} />
       </section>
 
       <section className="card stack">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/SubmitButton";
 import { listJobs } from "@/lib/jobs";
 
 export const dynamic = "force-dynamic";
@@ -46,7 +47,7 @@ export default async function Home() {
             Notes
             <textarea name="notes" />
           </label>
-          <button type="submit">Run SEO/GEO Review</button>
+          <SubmitButton pendingText="Creating review...">Run SEO/GEO Review</SubmitButton>
         </form>
 
         <form className="card stack" action="/api/articles" method="post">
@@ -72,7 +73,7 @@ export default async function Home() {
             Desired POV and talking points
             <textarea name="sourceMaterial" />
           </label>
-          <button type="submit">Start Article Brief</button>
+          <SubmitButton pendingText="Starting article...">Start Article Brief</SubmitButton>
         </form>
       </section>
 

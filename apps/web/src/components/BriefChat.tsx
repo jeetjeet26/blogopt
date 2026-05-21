@@ -30,6 +30,7 @@ export function BriefChat() {
   const [brief, setBrief] = useState<Brief>({});
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [startingJob, setStartingJob] = useState(false);
 
   async function sendMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,6 +57,7 @@ export function BriefChat() {
   }
 
   async function startJob() {
+    setStartingJob(true);
     const response = await fetch("/api/articles", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
@@ -111,8 +113,8 @@ export function BriefChat() {
         <p>
           <strong>POV:</strong> {brief.pointOfView || "Not specified"}
         </p>
-        <button type="button" disabled={!ready} onClick={startJob}>
-          Generate Article
+        <button type="button" disabled={!ready || startingJob} onClick={startJob}>
+          {startingJob ? "Creating job..." : "Generate Article"}
         </button>
         {!ready ? <p className="muted">The agent will enable generation when the brief is ready.</p> : null}
       </aside>
