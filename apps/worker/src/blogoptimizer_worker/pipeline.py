@@ -91,9 +91,14 @@ async def run_job(job_id: str) -> None:
 
 
 async def update_job(job_id: str, status: str) -> None:
+    payload = {
+        "status": status,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if status != "failed":
+        payload["error_message"] = None
+        payload["completed_at"] = None
+
     get_supabase().table("optimization_jobs").update(
-        {
-            "status": status,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        }
+        payload
     ).eq("id", job_id).execute()
