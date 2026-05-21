@@ -46,7 +46,8 @@ a {
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   margin: 0;
 }
 
@@ -188,7 +189,19 @@ button:disabled {
   gap: 16px;
 }
 
+.recommendation-block {
+  background: #fff;
+  border: 1px solid #eadfce;
+  border-radius: 18px;
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
 pre {
+  background: rgb(234 223 206 / 35%);
+  border-radius: 14px;
+  padding: 14px;
   white-space: pre-wrap;
 }
 

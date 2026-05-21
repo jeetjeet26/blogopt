@@ -43,6 +43,10 @@ class RecommendationPayload(BaseModel):
     metaTitle: dict
     metaDescription: dict
     slug: dict
+    copyImprovements: list[dict] = Field(default_factory=list)
+    revisedSections: list[dict] = Field(default_factory=list)
+    contentGaps: list[dict] = Field(default_factory=list)
+    suggestedAdditions: list[dict] = Field(default_factory=list)
     keywords: list[dict]
     geoSignals: list[dict]
     internalLinks: list[dict]

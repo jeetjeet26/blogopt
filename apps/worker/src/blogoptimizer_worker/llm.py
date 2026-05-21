@@ -22,7 +22,14 @@ async def generate_recommendation(
         "role": "user",
         "content": json.dumps(
             {
-                "task": "Create P11creative SEO and GEO recommendations. If mode is write, also draft the article body in the summary guidance. Preserve P11 brand voice and do not invent unsupported claims.",
+                "task": (
+                    "Create a full P11creative SEO and GEO editorial review. Do not stop at "
+                    "metadata. Provide concrete copy edits, rewritten sections, content gaps, "
+                    "source-backed additions, and rationale tied to keyword/search intent, "
+                    "citation readiness, internal linking, and brand voice. If mode is write, "
+                    "also draft article copy. Preserve P11's personality and do not invent "
+                    "unsupported factual claims."
+                ),
                 "mode": mode,
                 "article": article,
                 "brief": brief,
@@ -39,6 +46,37 @@ async def generate_recommendation(
                         "rationale": "string"
                     },
                     "slug": {"current": "string", "recommended": "string", "rationale": "string"},
+                    "copyImprovements": [
+                        {
+                            "location": "intro, H2 name, CTA, paragraph, etc.",
+                            "issue": "what is underperforming in the current copy",
+                            "recommendation": "specific editorial action",
+                            "seoOrGeoRationale": "why this improves SEO/GEO"
+                        }
+                    ],
+                    "revisedSections": [
+                        {
+                            "section": "section name",
+                            "current": "current copy excerpt",
+                            "revised": "rewritten publish-ready copy",
+                            "rationale": "why this revision is better"
+                        }
+                    ],
+                    "contentGaps": [
+                        {
+                            "gap": "missing topic, proof point, statistic, FAQ, definition, etc.",
+                            "whyItMatters": "SEO/GEO reason",
+                            "suggestedCopy": "copy the editor can add"
+                        }
+                    ],
+                    "suggestedAdditions": [
+                        {
+                            "type": "FAQ, definition block, source-backed claim, CTA, internal link module",
+                            "placement": "where it belongs",
+                            "copy": "publish-ready suggested copy",
+                            "rationale": "research/SEO/GEO rationale"
+                        }
+                    ],
                     "keywords": [],
                     "geoSignals": [],
                     "internalLinks": [],
@@ -70,6 +108,16 @@ async def generate_recommendation(
 
 
 def _normalize_payload(payload: dict) -> dict:
+    payload["copyImprovements"] = [
+        _normalize_copy_improvement(item) for item in payload.get("copyImprovements", [])
+    ]
+    payload["revisedSections"] = [
+        _normalize_revised_section(item) for item in payload.get("revisedSections", [])
+    ]
+    payload["contentGaps"] = [_normalize_content_gap(item) for item in payload.get("contentGaps", [])]
+    payload["suggestedAdditions"] = [
+        _normalize_suggested_addition(item) for item in payload.get("suggestedAdditions", [])
+    ]
     payload["keywords"] = [_normalize_keyword(item) for item in payload.get("keywords", [])]
     payload["geoSignals"] = [_normalize_geo_signal(item) for item in payload.get("geoSignals", [])]
     payload["internalLinks"] = [
@@ -80,6 +128,75 @@ def _normalize_payload(payload: dict) -> dict:
         item for item in [_normalize_source(item) for item in payload.get("sources", [])] if item
     ]
     return payload
+
+
+def _normalize_copy_improvement(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "location": item.get("location") or item.get("section") or "Article copy",
+            "issue": item.get("issue") or item.get("problem") or "Copy can be strengthened.",
+            "recommendation": item.get("recommendation") or item.get("suggestion") or "",
+            "seoOrGeoRationale": item.get("seoOrGeoRationale")
+            or item.get("rationale")
+            or "Improves relevance, clarity, or citation readiness.",
+        }
+
+    return {
+        "location": "Article copy",
+        "issue": "Copy can be strengthened.",
+        "recommendation": item,
+        "seoOrGeoRationale": "Improves relevance, clarity, or citation readiness.",
+    }
+
+
+def _normalize_revised_section(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "section": item.get("section") or item.get("location") or "Article section",
+            "current": item.get("current"),
+            "revised": item.get("revised") or item.get("copy") or "",
+            "rationale": item.get("rationale") or "Recommended rewrite.",
+        }
+
+    return {
+        "section": "Article section",
+        "revised": item,
+        "rationale": "Recommended rewrite.",
+    }
+
+
+def _normalize_content_gap(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "gap": item.get("gap") or item.get("topic") or "Missing content",
+            "whyItMatters": item.get("whyItMatters")
+            or item.get("rationale")
+            or "Adds topical depth and search relevance.",
+            "suggestedCopy": item.get("suggestedCopy") or item.get("copy") or "",
+        }
+
+    return {
+        "gap": item,
+        "whyItMatters": "Adds topical depth and search relevance.",
+        "suggestedCopy": "",
+    }
+
+
+def _normalize_suggested_addition(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "type": item.get("type") or "Copy addition",
+            "placement": item.get("placement") or item.get("location") or "Article body",
+            "copy": item.get("copy") or item.get("suggestedCopy") or "",
+            "rationale": item.get("rationale") or "Recommended addition.",
+        }
+
+    return {
+        "type": "Copy addition",
+        "placement": "Article body",
+        "copy": item,
+        "rationale": "Recommended addition.",
+    }
 
 
 def _normalize_keyword(item: dict | str) -> dict:

@@ -54,6 +54,97 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
               <p>{recommendation.slug?.recommended}</p>
             </div>
           </div>
+
+          <h3>Copy Improvements</h3>
+          <div className="stack">
+            {recommendation.copyImprovements?.length ? (
+              recommendation.copyImprovements.map(
+                (
+                  item: {
+                    location: string;
+                    issue: string;
+                    recommendation: string;
+                    seoOrGeoRationale: string;
+                  },
+                  index: number
+                ) => (
+                  <article className="recommendation-block" key={`${item.location}-${index}`}>
+                    <span className="eyebrow">{item.location}</span>
+                    <p>
+                      <strong>Issue:</strong> {item.issue}
+                    </p>
+                    <p>
+                      <strong>Recommended edit:</strong> {item.recommendation}
+                    </p>
+                    <p className="muted">{item.seoOrGeoRationale}</p>
+                  </article>
+                )
+              )
+            ) : (
+              <p className="muted">No copy improvements were returned for this run.</p>
+            )}
+          </div>
+
+          <h3>Rewritten Sections</h3>
+          <div className="stack">
+            {recommendation.revisedSections?.length ? (
+              recommendation.revisedSections.map(
+                (
+                  item: { section: string; current?: string; revised: string; rationale: string },
+                  index: number
+                ) => (
+                  <article className="recommendation-block" key={`${item.section}-${index}`}>
+                    <h4>{item.section}</h4>
+                    {item.current ? (
+                      <>
+                        <strong>Current</strong>
+                        <pre>{item.current}</pre>
+                      </>
+                    ) : null}
+                    <strong>Suggested Rewrite</strong>
+                    <pre>{item.revised}</pre>
+                    <p className="muted">{item.rationale}</p>
+                  </article>
+                )
+              )
+            ) : (
+              <p className="muted">No rewritten sections were returned for this run.</p>
+            )}
+          </div>
+
+          <h3>Content Gaps and Additions</h3>
+          <div className="grid">
+            <div className="stack">
+              {recommendation.contentGaps?.map(
+                (
+                  item: { gap: string; whyItMatters: string; suggestedCopy: string },
+                  index: number
+                ) => (
+                  <article className="recommendation-block" key={`${item.gap}-${index}`}>
+                    <h4>{item.gap}</h4>
+                    <p className="muted">{item.whyItMatters}</p>
+                    {item.suggestedCopy ? <pre>{item.suggestedCopy}</pre> : null}
+                  </article>
+                )
+              )}
+            </div>
+            <div className="stack">
+              {recommendation.suggestedAdditions?.map(
+                (
+                  item: { type: string; placement: string; copy: string; rationale: string },
+                  index: number
+                ) => (
+                  <article className="recommendation-block" key={`${item.type}-${index}`}>
+                    <span className="eyebrow">{item.type}</span>
+                    <h4>{item.placement}</h4>
+                    <pre>{item.copy}</pre>
+                    <p className="muted">{item.rationale}</p>
+                  </article>
+                )
+              )}
+            </div>
+          </div>
+
           <h3>Keyword Targets</h3>
           <ul>
             {recommendation.keywords?.map((keyword: { keyword: string; rationale: string }) => (

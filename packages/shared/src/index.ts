@@ -53,6 +53,45 @@ export const recommendationSchema = z.object({
     recommended: z.string(),
     rationale: z.string()
   }),
+  copyImprovements: z
+    .array(
+      z.object({
+        location: z.string(),
+        issue: z.string(),
+        recommendation: z.string(),
+        seoOrGeoRationale: z.string()
+      })
+    )
+    .default([]),
+  revisedSections: z
+    .array(
+      z.object({
+        section: z.string(),
+        current: z.string().optional(),
+        revised: z.string(),
+        rationale: z.string()
+      })
+    )
+    .default([]),
+  contentGaps: z
+    .array(
+      z.object({
+        gap: z.string(),
+        whyItMatters: z.string(),
+        suggestedCopy: z.string()
+      })
+    )
+    .default([]),
+  suggestedAdditions: z
+    .array(
+      z.object({
+        type: z.string(),
+        placement: z.string(),
+        copy: z.string(),
+        rationale: z.string()
+      })
+    )
+    .default([]),
   keywords: z.array(
     z.object({
       keyword: z.string(),
