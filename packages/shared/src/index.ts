@@ -5,9 +5,16 @@ export type JobMode = z.infer<typeof jobModeSchema>;
 
 export const jobStatusSchema = z.enum([
   "queued",
+  "preparing",
   "researching",
+  "keyword_research",
+  "source_research",
+  "technical_audit",
+  "saving_research",
   "drafting",
   "reviewing",
+  "generating_rewrites",
+  "saving_recommendations",
   "completed",
   "failed"
 ]);

@@ -18,7 +18,7 @@ async def run_job(job_id: str) -> None:
     )
 
     try:
-        await update_job(job_id, "researching")
+        await update_job(job_id, "preparing")
         article = job["articles"]
         brief = (
             supabase.table("article_briefs")
@@ -36,10 +36,14 @@ async def run_job(job_id: str) -> None:
         }
         topic = brief["topic"] if brief else article_for_analysis["title"]
 
+        await update_job(job_id, "keyword_research")
         keywords = await research_keywords(topic)
+        await update_job(job_id, "source_research")
         sources = await research_sources(topic)
+        await update_job(job_id, "technical_audit")
         technical = await audit_technical_signals(article.get("source_url"))
 
+        await update_job(job_id, "saving_research")
         supabase.table("seo_research").insert(
             {
                 "job_id": job_id,
@@ -64,7 +68,7 @@ async def run_job(job_id: str) -> None:
             }
         ).execute()
 
-        await update_job(job_id, "drafting" if job["mode"] == "write" else "reviewing")
+        await update_job(job_id, "drafting" if job["mode"] == "write" else "generating_rewrites")
         recommendation = await generate_recommendation(
             mode=job["mode"],
             article=article_for_analysis,
@@ -74,6 +78,7 @@ async def run_job(job_id: str) -> None:
             technical=technical,
         )
 
+        await update_job(job_id, "saving_recommendations")
         supabase.table("recommendations").insert(
             {
                 "job_id": job_id,
@@ -84,7 +89,7 @@ async def run_job(job_id: str) -> None:
             }
         ).execute()
 
-        await update_job(job_id, "completed")
+        await update_job(job_id, "completed", completed=True)
     except Exception as exc:
         supabase.table("optimization_jobs").update(
             {
@@ -96,14 +101,14 @@ async def run_job(job_id: str) -> None:
         raise
 
 
-async def update_job(job_id: str, status: str) -> None:
+async def update_job(job_id: str, status: str, completed: bool = False) -> None:
     payload = {
         "status": status,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     if status != "failed":
         payload["error_message"] = None
-        payload["completed_at"] = None
+        payload["completed_at"] = datetime.now(timezone.utc).isoformat() if completed else None
 
     get_supabase().table("optimization_jobs").update(
         payload
