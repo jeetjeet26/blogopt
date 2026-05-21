@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { articleBriefSchema, articleInputSchema } from "@blogoptimizer/shared";
+import { getEnv } from "@/lib/env";
 import { createOptimizationJob } from "@/lib/jobs";
 
 export async function POST(request: Request) {
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 function redirectOrJson(request: Request, jobId: string) {
   const accepts = request.headers.get("accept") || "";
   if (accepts.includes("text/html")) {
-    return NextResponse.redirect(new URL(`/jobs/${jobId}`, request.url), 303);
+    return NextResponse.redirect(new URL(`/jobs/${jobId}`, getEnv().NEXT_PUBLIC_APP_URL), 303);
   }
 
   return NextResponse.json({ jobId });
