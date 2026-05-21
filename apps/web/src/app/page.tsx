@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SubmitButton } from "@/components/SubmitButton";
+import { ArticleForms } from "@/components/ArticleForms";
 import { listJobs } from "@/lib/jobs";
 
 export const dynamic = "force-dynamic";
@@ -27,55 +27,7 @@ export default async function Home() {
         </p>
       </section>
 
-      <section className="grid">
-        <form className="card stack" action="/api/articles" method="post">
-          <input type="hidden" name="mode" value="optimize" />
-          <h2>Optimize Existing Draft</h2>
-          <label>
-            Title
-            <input name="title" required />
-          </label>
-          <label>
-            Source URL
-            <input name="sourceUrl" type="url" placeholder="https://p11.com/..." />
-          </label>
-          <label>
-            Draft body
-            <textarea name="body" required />
-          </label>
-          <label>
-            Notes
-            <textarea name="notes" />
-          </label>
-          <SubmitButton pendingText="Creating review...">Run SEO/GEO Review</SubmitButton>
-        </form>
-
-        <form className="card stack" action="/api/articles" method="post">
-          <input type="hidden" name="mode" value="write" />
-          <h2>Write New Article</h2>
-          <label>
-            Topic
-            <input name="topic" required />
-          </label>
-          <label>
-            Audience
-            <input name="audience" required placeholder="Real estate developers, brokers..." />
-          </label>
-          <label>
-            Goal
-            <input name="goal" required placeholder="Educate, rank, generate leads..." />
-          </label>
-          <label>
-            Target market
-            <input name="targetMarket" />
-          </label>
-          <label>
-            Desired POV and talking points
-            <textarea name="sourceMaterial" />
-          </label>
-          <SubmitButton pendingText="Starting article...">Start Article Brief</SubmitButton>
-        </form>
-      </section>
+      <ArticleForms />
 
       <section className="card stack">
         <h2>Recent Jobs</h2>
