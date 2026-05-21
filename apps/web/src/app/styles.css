@@ -195,6 +195,12 @@ button:disabled {
 }
 
 .progress-steps .step-complete {
+  background: #eadfce;
+  border-color: #eadfce;
+  color: #171717;
+}
+
+.progress-steps .step-current {
   background: #171717;
   border-color: #171717;
   color: #fff;

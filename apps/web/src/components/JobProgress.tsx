@@ -92,6 +92,13 @@ export function JobProgress({ jobId, initialStatus, initialError }: JobProgressP
 
   const progress = progressByStatus[status];
   const progressLabel = useMemo(() => labelByStatus[status], [status]);
+  const visibleStages =
+    status === "completed" || status === "failed"
+      ? []
+      : stageOrder.filter((stage) => {
+          const distance = progressByStatus[stage] - progress;
+          return distance <= 24 && progressByStatus[stage] >= progress - 16;
+        });
 
   return (
     <div className="progress-card" aria-live="polite">
@@ -103,16 +110,18 @@ export function JobProgress({ jobId, initialStatus, initialError }: JobProgressP
       <div className="progress-track" aria-label={`Job progress ${progress}%`}>
         <div className="progress-fill" style={{ width: `${progress}%` }} />
       </div>
-      <ol className="progress-steps">
-        {stageOrder.map((stage) => (
-          <li
-            className={progressByStatus[stage] <= progress ? "step-complete" : undefined}
-            key={stage}
-          >
-            {labelByStatus[stage]}
-          </li>
-        ))}
-      </ol>
+      {visibleStages.length ? (
+        <ol className="progress-steps">
+          {visibleStages.map((stage) => (
+            <li
+              className={stage === status ? "step-current" : "step-complete"}
+              key={stage}
+            >
+              {labelByStatus[stage]}
+            </li>
+          ))}
+        </ol>
+      ) : null}
       {status !== "completed" && status !== "failed" ? (
         <p className="muted">This page updates automatically while the worker runs.</p>
       ) : null}
