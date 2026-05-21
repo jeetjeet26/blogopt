@@ -1,0 +1,36 @@
+{
+  "name": "P11 Buzz Optimizer",
+  "description": "Internal SEO/GEO blog optimizer and article drafting app.",
+  "repository": "https://github.com/jeetjeet26/blogopt",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_APP_URL": {
+      "required": true
+    },
+    "SUPABASE_URL": {
+      "required": true
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "required": true
+    },
+    "OPENAI_API_KEY": {
+      "required": true
+    },
+    "WORKER_API_URL": {
+      "required": true
+    },
+    "WORKER_API_TOKEN": {
+      "required": true
+    },
+    "SLACK_SIGNING_SECRET": {
+      "required": false
+    },
+    "SLACK_BOT_TOKEN": {
+      "required": false
+    }
+  }
+}

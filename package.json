@@ -1,0 +1,22 @@
+{
+  "name": "blogoptimizer",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @blogoptimizer/web",
+    "build": "npm run build -w @blogoptimizer/shared && npm run build -w @blogoptimizer/web",
+    "heroku-postbuild": "npm run build",
+    "lint": "npm run lint -w @blogoptimizer/web",
+    "start": "npm run start -w @blogoptimizer/web",
+    "typecheck": "npm run typecheck -w @blogoptimizer/shared && npm run typecheck -w @blogoptimizer/web",
+    "worker:dev": "cd apps/worker && uvicorn blogoptimizer_worker.main:app --reload --app-dir src"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  }
+}
