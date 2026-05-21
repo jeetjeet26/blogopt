@@ -43,6 +43,7 @@ class RecommendationPayload(BaseModel):
     keywordStrategy: dict = Field(default_factory=dict)
     sectionKeywordMap: list[dict] = Field(default_factory=list)
     prioritizedActions: list[dict] = Field(default_factory=list)
+    rewriteOptions: list[dict] = Field(default_factory=list)
     metaTitle: dict
     metaDescription: dict
     slug: dict

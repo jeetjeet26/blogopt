@@ -198,6 +198,18 @@ button:disabled {
   padding: 16px;
 }
 
+.block-heading {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.draft-copy {
+  min-height: 420px;
+  white-space: pre-wrap;
+}
+
 pre {
   background: rgb(234 223 206 / 35%);
   border-radius: 14px;

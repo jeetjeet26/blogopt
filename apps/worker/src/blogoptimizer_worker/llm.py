@@ -30,9 +30,14 @@ async def generate_recommendation(
                     "using volume, difficulty, CPC, and search intent when available. Every copy "
                     "recommendation must name the target keyword or semantic entity it supports. "
                     "Avoid generic AI modules, city placeholders, broad local SEO advice, and "
-                    "full rewrites that flatten P11's playful voice. Make surgical, publish-ready "
-                    "edits that improve ranking potential while preserving the article's original "
-                    "tone. Treat article.body as already cleaned of nav/footer chrome."
+                    "rewrite options that flatten P11's playful voice. Do not give the team a "
+                    "bag of blocks to assemble. Give them ready-to-use article copy options that "
+                    "already incorporate the keyword strategy, citations/proof needs, internal "
+                    "link opportunities, schema/GEO readiness, and brand voice. For optimize mode, "
+                    "return 2-3 complete or near-complete revised drafts based on the submitted "
+                    "article: conservative polish, SEO-forward, and GEO/citation-ready when useful. "
+                    "For write mode, return 2-3 complete article draft options with the same rigor. "
+                    "Treat article.body as already cleaned of nav/footer chrome."
                 ),
                 "mode": mode,
                 "article": article,
@@ -78,6 +83,20 @@ async def generate_recommendation(
                             "keyword": "keyword if applicable",
                             "expectedImpact": "why it matters",
                             "effort": "low/medium/high"
+                        }
+                    ],
+                    "rewriteOptions": [
+                        {
+                            "optionName": "Conservative Polish / SEO-Forward / GEO-Citation Ready",
+                            "useWhen": "when the team should choose this option",
+                            "strategy": "how this option uses the SEMrush keyword strategy and preserves P11 voice",
+                            "primaryKeyword": "primary keyword used in the draft",
+                            "supportingKeywords": ["secondary keyword"],
+                            "fullDraft": "complete publish-ready article copy or near-complete revised article copy",
+                            "changeSummary": [
+                                "specific keyword, structure, citation, CTA, or internal-link changes made"
+                            ],
+                            "implementationNotes": "what the editor still needs to verify, link, or approve"
                         }
                     ],
                     "metaTitle": {"current": "string", "recommended": "string", "rationale": "string"},
@@ -165,6 +184,9 @@ def _normalize_payload(payload: dict) -> dict:
     payload["prioritizedActions"] = [
         _normalize_prioritized_action(item) for item in payload.get("prioritizedActions", [])
     ]
+    payload["rewriteOptions"] = [
+        _normalize_rewrite_option(item) for item in payload.get("rewriteOptions", [])
+    ]
     payload["copyImprovements"] = [
         _normalize_copy_improvement(item) for item in payload.get("copyImprovements", [])
     ]
@@ -185,6 +207,29 @@ def _normalize_payload(payload: dict) -> dict:
         item for item in [_normalize_source(item) for item in payload.get("sources", [])] if item
     ]
     return payload
+
+
+def _normalize_rewrite_option(item: dict | str) -> dict:
+    if isinstance(item, dict):
+        return {
+            "optionName": item.get("optionName") or item.get("name") or "Rewrite Option",
+            "useWhen": item.get("useWhen") or item.get("use_when") or "Use when this direction fits editorial goals.",
+            "strategy": item.get("strategy") or "Keyword-backed rewrite preserving P11 voice.",
+            "primaryKeyword": item.get("primaryKeyword") or item.get("primary_keyword"),
+            "supportingKeywords": item.get("supportingKeywords") or item.get("supporting_keywords") or [],
+            "fullDraft": item.get("fullDraft") or item.get("draft") or item.get("copy") or "",
+            "changeSummary": item.get("changeSummary") or item.get("change_summary") or [],
+            "implementationNotes": item.get("implementationNotes") or item.get("implementation_notes"),
+        }
+
+    return {
+        "optionName": "Rewrite Option",
+        "useWhen": "Use when this direction fits editorial goals.",
+        "strategy": "Keyword-backed rewrite preserving P11 voice.",
+        "supportingKeywords": [],
+        "fullDraft": item,
+        "changeSummary": [],
+    }
 
 
 def _normalize_keyword_strategy(item: dict) -> dict:

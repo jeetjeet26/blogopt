@@ -83,6 +83,20 @@ export const recommendationSchema = z.object({
       })
     )
     .default([]),
+  rewriteOptions: z
+    .array(
+      z.object({
+        optionName: z.string(),
+        useWhen: z.string(),
+        strategy: z.string(),
+        primaryKeyword: z.string().optional(),
+        supportingKeywords: z.array(z.string()).default([]),
+        fullDraft: z.string(),
+        changeSummary: z.array(z.string()).default([]),
+        implementationNotes: z.string().optional()
+      })
+    )
+    .default([]),
   metaTitle: z.object({
     current: z.string().optional(),
     recommended: z.string(),

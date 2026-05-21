@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyButton } from "@/components/CopyButton";
 import { JobProgress } from "@/components/JobProgress";
 import { getJob } from "@/lib/jobs";
 
@@ -102,6 +103,67 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             </>
           ) : null}
 
+          {recommendation.rewriteOptions?.length ? (
+            <>
+              <h3>Ready-To-Use Rewrite Options</h3>
+              <p className="muted">
+                These are complete copy directions your team can lift, edit, or combine. Each option
+                already incorporates the keyword strategy, SEO findings, GEO readiness, and P11 voice.
+              </p>
+              <div className="stack">
+                {recommendation.rewriteOptions.map(
+                  (
+                    option: {
+                      optionName: string;
+                      useWhen: string;
+                      strategy: string;
+                      primaryKeyword?: string;
+                      supportingKeywords?: string[];
+                      fullDraft: string;
+                      changeSummary?: string[];
+                      implementationNotes?: string;
+                    },
+                    index: number
+                  ) => (
+                    <article className="recommendation-block" key={`${option.optionName}-${index}`}>
+                      <div className="block-heading">
+                        <div>
+                          <span className="eyebrow">Option {index + 1}</span>
+                          <h4>{option.optionName}</h4>
+                        </div>
+                        <CopyButton value={option.fullDraft} />
+                      </div>
+                      <p>
+                        <strong>Use when:</strong> {option.useWhen}
+                      </p>
+                      <p className="muted">{option.strategy}</p>
+                      <p>
+                        <strong>Primary keyword:</strong> {option.primaryKeyword || "Not specified"}
+                      </p>
+                      {option.supportingKeywords?.length ? (
+                        <p>
+                          <strong>Supporting keywords:</strong> {option.supportingKeywords.join(", ")}
+                        </p>
+                      ) : null}
+                      {option.changeSummary?.length ? (
+                        <ul>
+                          {option.changeSummary.map((change, changeIndex) => (
+                            <li key={`${change}-${changeIndex}`}>{change}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      <strong>Draft Copy</strong>
+                      <textarea className="draft-copy" readOnly value={option.fullDraft} />
+                      {option.implementationNotes ? (
+                        <p className="muted">{option.implementationNotes}</p>
+                      ) : null}
+                    </article>
+                  )
+                )}
+              </div>
+            </>
+          ) : null}
+
           <div className="comparison">
             <div>
               <h3>Current</h3>
@@ -155,37 +217,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             </>
           ) : null}
 
-          <h3>Copy Improvements</h3>
-          <div className="stack">
-            {recommendation.copyImprovements?.length ? (
-              recommendation.copyImprovements.map(
-                (
-                  item: {
-                    location: string;
-                    issue: string;
-                    recommendation: string;
-                    seoOrGeoRationale: string;
-                  },
-                  index: number
-                ) => (
-                  <article className="recommendation-block" key={`${item.location}-${index}`}>
-                    <span className="eyebrow">{item.location}</span>
-                    <p>
-                      <strong>Issue:</strong> {item.issue}
-                    </p>
-                    <p>
-                      <strong>Recommended edit:</strong> {item.recommendation}
-                    </p>
-                    <p className="muted">{item.seoOrGeoRationale}</p>
-                  </article>
-                )
-              )
-            ) : (
-              <p className="muted">No copy improvements were returned for this run.</p>
-            )}
-          </div>
-
-          <h3>Rewritten Sections</h3>
+          <h3>Supporting Section-Level Rewrites</h3>
           <div className="stack">
             {recommendation.revisedSections?.length ? (
               recommendation.revisedSections.map(
@@ -201,7 +233,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                         <pre>{item.current}</pre>
                       </>
                     ) : null}
-                    <strong>Suggested Rewrite</strong>
+                    <strong>Suggested Section Copy</strong>
                     <pre>{item.revised}</pre>
                     <p className="muted">{item.rationale}</p>
                   </article>
@@ -210,39 +242,6 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             ) : (
               <p className="muted">No rewritten sections were returned for this run.</p>
             )}
-          </div>
-
-          <h3>Content Gaps and Additions</h3>
-          <div className="grid">
-            <div className="stack">
-              {recommendation.contentGaps?.map(
-                (
-                  item: { gap: string; whyItMatters: string; suggestedCopy: string },
-                  index: number
-                ) => (
-                  <article className="recommendation-block" key={`${item.gap}-${index}`}>
-                    <h4>{item.gap}</h4>
-                    <p className="muted">{item.whyItMatters}</p>
-                    {item.suggestedCopy ? <pre>{item.suggestedCopy}</pre> : null}
-                  </article>
-                )
-              )}
-            </div>
-            <div className="stack">
-              {recommendation.suggestedAdditions?.map(
-                (
-                  item: { type: string; placement: string; copy: string; rationale: string },
-                  index: number
-                ) => (
-                  <article className="recommendation-block" key={`${item.type}-${index}`}>
-                    <span className="eyebrow">{item.type}</span>
-                    <h4>{item.placement}</h4>
-                    <pre>{item.copy}</pre>
-                    <p className="muted">{item.rationale}</p>
-                  </article>
-                )
-              )}
-            </div>
           </div>
 
           <h3>All Keyword Targets</h3>
