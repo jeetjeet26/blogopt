@@ -78,7 +78,7 @@ export async function getJob(jobId: string) {
   const { data, error } = await supabase
     .from("optimization_jobs")
     .select(
-      "*, articles(*), recommendations(*), seo_research(*), source_research(*), technical_audits(*)"
+      "*, articles(*, article_briefs(*)), recommendations(*), seo_research(*), source_research(*), technical_audits(*)"
     )
     .eq("id", jobId)
     .single();

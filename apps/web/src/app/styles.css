@@ -255,6 +255,10 @@ pre {
   white-space: pre-wrap;
 }
 
+summary {
+  cursor: pointer;
+}
+
 @media (max-width: 820px) {
   .grid,
   .comparison {

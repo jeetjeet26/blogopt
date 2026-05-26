@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     worker_api_token: str = Field(default="dev-worker-token", alias="WORKER_API_TOKEN")
     openai_api_key: str = Field(alias="OPENAI_API_KEY")
     openai_model: str = Field(default="gpt-5", alias="OPENAI_MODEL")
+    openai_search_model: str = Field(default="gpt-5.5", alias="OPENAI_SEARCH_MODEL")
     semrush_api_key: str | None = Field(default=None, alias="SEMRUSH_API_KEY")
     screaming_frog_api_url: AnyHttpUrl | None = Field(default=None, alias="SCREAMING_FROG_API_URL")
     screaming_frog_api_key: str | None = Field(default=None, alias="SCREAMING_FROG_API_KEY")

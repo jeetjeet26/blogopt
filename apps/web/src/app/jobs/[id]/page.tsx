@@ -5,10 +5,42 @@ import { getJob } from "@/lib/jobs";
 
 export const dynamic = "force-dynamic";
 
+type RewriteOption = {
+  optionName: string;
+  useWhen: string;
+  strategy: string;
+  primaryKeyword?: string;
+  supportingKeywords?: string[];
+  fullDraft: string;
+  changeSummary?: string[];
+  implementationNotes?: string;
+};
+
 export default async function JobPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const job = await getJob(id);
   const recommendation = job.recommendations?.[0]?.payload;
+  const isWriteMode = job.mode === "write";
+  const brief = Array.isArray(job.articles?.article_briefs)
+    ? job.articles.article_briefs[0]
+    : undefined;
+  const researchPayloads = [
+    {
+      label: "SEMrush Keyword Payload",
+      provider: job.seo_research?.[0]?.provider,
+      payload: job.seo_research?.[0]?.payload ?? []
+    },
+    {
+      label: "Web Source Payload",
+      provider: job.source_research?.[0]?.provider,
+      payload: job.source_research?.[0]?.payload ?? []
+    },
+    {
+      label: "Technical Audit Payload",
+      provider: job.technical_audits?.[0]?.provider,
+      payload: job.technical_audits?.[0]?.payload ?? {}
+    }
+  ];
 
   return (
     <div className="stack">
@@ -26,15 +58,42 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       </section>
 
       <section className="card stack">
-        <h2>Article</h2>
+        <h2>{isWriteMode ? "Brief Source Material" : "Article"}</h2>
         <p className="muted">{job.articles?.source_url}</p>
         <pre>{job.articles?.body || "No draft body yet."}</pre>
       </section>
 
+      {brief ? (
+        <section className="card stack">
+          <h2>Brief Payload</h2>
+          <pre>{JSON.stringify(brief, null, 2)}</pre>
+        </section>
+      ) : null}
+
+      <section className="card stack">
+        <h2>Research Payloads Injected</h2>
+        <p className="muted">
+          These are the saved research artifacts passed into the LLM for this run.
+        </p>
+        {researchPayloads.map((item) => (
+          <details className="recommendation-block" key={item.label}>
+            <summary>
+              <strong>{item.label}</strong>
+              {item.provider ? <span className="muted"> · {item.provider}</span> : null}
+            </summary>
+            <pre>{JSON.stringify(item.payload, null, 2)}</pre>
+          </details>
+        ))}
+      </section>
+
       {recommendation ? (
         <section className="card stack">
-          <h2>Recommendations</h2>
+          <h2>{isWriteMode ? "Article Drafts and Strategy" : "Recommendations"}</h2>
           <p>{recommendation.summary}</p>
+
+          {recommendation.rewriteOptions?.length ? (
+            <DraftOptions options={recommendation.rewriteOptions} isWriteMode={isWriteMode} />
+          ) : null}
 
           {recommendation.keywordStrategy?.primaryKeyword ? (
             <section className="recommendation-block">
@@ -96,67 +155,6 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                         {item.expectedImpact}
                         {item.effort ? ` Effort: ${item.effort}.` : ""}
                       </p>
-                    </article>
-                  )
-                )}
-              </div>
-            </>
-          ) : null}
-
-          {recommendation.rewriteOptions?.length ? (
-            <>
-              <h3>Ready-To-Use Rewrite Options</h3>
-              <p className="muted">
-                These are complete copy directions your team can lift, edit, or combine. Each option
-                already incorporates the keyword strategy, SEO findings, GEO readiness, and P11 voice.
-              </p>
-              <div className="stack">
-                {recommendation.rewriteOptions.map(
-                  (
-                    option: {
-                      optionName: string;
-                      useWhen: string;
-                      strategy: string;
-                      primaryKeyword?: string;
-                      supportingKeywords?: string[];
-                      fullDraft: string;
-                      changeSummary?: string[];
-                      implementationNotes?: string;
-                    },
-                    index: number
-                  ) => (
-                    <article className="recommendation-block" key={`${option.optionName}-${index}`}>
-                      <div className="block-heading">
-                        <div>
-                          <span className="eyebrow">Option {index + 1}</span>
-                          <h4>{option.optionName}</h4>
-                        </div>
-                        <CopyButton value={option.fullDraft} />
-                      </div>
-                      <p>
-                        <strong>Use when:</strong> {option.useWhen}
-                      </p>
-                      <p className="muted">{option.strategy}</p>
-                      <p>
-                        <strong>Primary keyword:</strong> {option.primaryKeyword || "Not specified"}
-                      </p>
-                      {option.supportingKeywords?.length ? (
-                        <p>
-                          <strong>Supporting keywords:</strong> {option.supportingKeywords.join(", ")}
-                        </p>
-                      ) : null}
-                      {option.changeSummary?.length ? (
-                        <ul>
-                          {option.changeSummary.map((change, changeIndex) => (
-                            <li key={`${change}-${changeIndex}`}>{change}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                      <strong>Draft Copy</strong>
-                      <textarea className="draft-copy" readOnly value={option.fullDraft} />
-                      {option.implementationNotes ? (
-                        <p className="muted">{option.implementationNotes}</p>
-                      ) : null}
                     </article>
                   )
                 )}
@@ -260,5 +258,61 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         </section>
       )}
     </div>
+  );
+}
+
+function DraftOptions({
+  options,
+  isWriteMode
+}: {
+  options: RewriteOption[];
+  isWriteMode: boolean;
+}) {
+  return (
+    <>
+      <h3>{isWriteMode ? "Full Article Draft Options" : "Ready-To-Use Rewrite Options"}</h3>
+      <p className="muted">
+        {isWriteMode
+          ? "Each option is a complete draft with a different strategic emphasis, using the research payloads available for this run."
+          : "These are complete copy directions your team can lift, edit, or combine. Each option already incorporates the keyword strategy, SEO findings, GEO readiness, and P11 voice."}
+      </p>
+      <div className="stack">
+        {options.map((option, index) => (
+          <article className="recommendation-block" key={`${option.optionName}-${index}`}>
+            <div className="block-heading">
+              <div>
+                <span className="eyebrow">Option {index + 1}</span>
+                <h4>{option.optionName}</h4>
+              </div>
+              <CopyButton value={option.fullDraft} />
+            </div>
+            <p>
+              <strong>Use when:</strong> {option.useWhen}
+            </p>
+            <p className="muted">{option.strategy}</p>
+            <p>
+              <strong>Primary keyword:</strong> {option.primaryKeyword || "Not specified"}
+            </p>
+            {option.supportingKeywords?.length ? (
+              <p>
+                <strong>Supporting keywords:</strong> {option.supportingKeywords.join(", ")}
+              </p>
+            ) : null}
+            {option.changeSummary?.length ? (
+              <ul>
+                {option.changeSummary.map((change, changeIndex) => (
+                  <li key={`${change}-${changeIndex}`}>{change}</li>
+                ))}
+              </ul>
+            ) : null}
+            <strong>{isWriteMode ? "Article Draft" : "Draft Copy"}</strong>
+            <textarea className="draft-copy" readOnly value={option.fullDraft} />
+            {option.implementationNotes ? (
+              <p className="muted">{option.implementationNotes}</p>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </>
   );
 }

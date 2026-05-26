@@ -2,7 +2,11 @@
 
 ## Web App
 
-Deploy `apps/web` to Vercel or another Node.js host.
+Deploy the root repo to the `blogopt-p11` Heroku app:
+
+```bash
+git push heroku main
+```
 
 Required environment variables:
 
@@ -24,7 +28,11 @@ Recommended internal access controls:
 
 ## Worker
 
-Deploy `apps/worker` to a Python-capable service such as Render, Fly.io, Railway, or an internal VM.
+Deploy the worker subtree to the `blogopt-p11-worker` Heroku app:
+
+```bash
+git subtree push --prefix apps/worker heroku-worker main
+```
 
 Required worker environment variables:
 
@@ -32,10 +40,14 @@ Required worker environment variables:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+- `OPENAI_SEARCH_MODEL`
 - `WORKER_API_TOKEN`
 - `SEMRUSH_API_KEY`
 - `SCREAMING_FROG_API_URL`
 - `SCREAMING_FROG_API_KEY`
+
+Optional fallback web search provider variables:
+
 - `WEB_SEARCH_API_URL`
 - `WEB_SEARCH_API_KEY`
 

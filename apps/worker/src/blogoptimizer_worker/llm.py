@@ -18,6 +18,23 @@ async def generate_recommendation(
     sources: list[SourceFinding],
     technical: TechnicalFinding,
 ) -> RecommendationPayload:
+    write_mode_instruction = (
+        "For write mode, the primary deliverable is rewriteOptions. Return 2-3 distinct, "
+        "publish-ready article drafts, each with a different strategic emphasis such as "
+        "data/analytical, SEO-forward, GEO/citation-ready, contrarian, or brand-story-led when "
+        "appropriate to the brief. Each fullDraft must read like an actual written article with "
+        "a clear headline, narrative intro, developed paragraphs, useful subheads, and a CTA. "
+        "Do not make the draft mostly bullets, FAQs, notes, or an assembly kit unless the brief "
+        "explicitly asks for that format. Use semrush_keywords, web_sources, technical_audit, "
+        "brief, and article/source material as the research payloads that inform the drafts. "
+        "If web_sources are empty, state that limitation in implementationNotes and do not imply "
+        "that live web research supplied specific citations."
+    )
+    optimize_mode_instruction = (
+        "For optimize mode, return 2-3 complete or near-complete revised drafts based on the "
+        "submitted article: conservative polish, SEO-forward, and GEO/citation-ready when useful."
+    )
+
     prompt = {
         "role": "user",
         "content": json.dumps(
@@ -33,10 +50,8 @@ async def generate_recommendation(
                     "rewrite options that flatten P11's playful voice. Do not give the team a "
                     "bag of blocks to assemble. Give them ready-to-use article copy options that "
                     "already incorporate the keyword strategy, citations/proof needs, internal "
-                    "link opportunities, schema/GEO readiness, and brand voice. For optimize mode, "
-                    "return 2-3 complete or near-complete revised drafts based on the submitted "
-                    "article: conservative polish, SEO-forward, and GEO/citation-ready when useful. "
-                    "For write mode, return 2-3 complete article draft options with the same rigor. "
+                    "link opportunities, schema/GEO readiness, and brand voice. "
+                    f"{write_mode_instruction if mode == 'write' else optimize_mode_instruction} "
                     "Treat article.body as already cleaned of nav/footer chrome."
                 ),
                 "mode": mode,
@@ -45,6 +60,16 @@ async def generate_recommendation(
                 "semrush_keywords": [item.model_dump() for item in keywords],
                 "web_sources": [item.model_dump(mode="json") for item in sources],
                 "technical_audit": technical.model_dump(),
+                "research_payload_status": {
+                    "semrushKeywordCount": len(keywords),
+                    "webSourceCount": len(sources),
+                    "technicalAuditPresent": bool(technical.model_dump()),
+                    "note": (
+                        "These are the payloads injected into the writing/recommendation call. "
+                        "Use web_sources for sourced claims when present; if webSourceCount is 0, "
+                        "do not present inferred source names as live-researched citations."
+                    ),
+                },
                 "required_json_shape": {
                     "score": "0-100",
                     "summary": "concise keyword-backed review summary",
@@ -92,7 +117,10 @@ async def generate_recommendation(
                             "strategy": "how this option uses the SEMrush keyword strategy and preserves P11 voice",
                             "primaryKeyword": "primary keyword used in the draft",
                             "supportingKeywords": ["secondary keyword"],
-                            "fullDraft": "complete publish-ready article copy or near-complete revised article copy",
+                            "fullDraft": (
+                                "complete publish-ready article copy. In write mode, this must be "
+                                "a continuous article draft, not a bullet-point recommendation list."
+                            ),
                             "changeSummary": [
                                 "specific keyword, structure, citation, CTA, or internal-link changes made"
                             ],
